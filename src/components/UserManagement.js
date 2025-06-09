@@ -3,7 +3,11 @@ import API from '../api';
 
 function UserManagement({ user, onLogout }) {
   const [users, setUsers] = useState([]);
-  const [newUser, setNewUser] = useState({ name: '', email: '' });
+  const [newUser, setNewUser] = useState({
+    username: '',
+    email: '',
+    password: '',
+  });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -24,12 +28,14 @@ function UserManagement({ user, onLogout }) {
   };
 
   const handleAddUser = async () => {
-    if (!newUser.name || !newUser.email) return alert('Vui lòng nhập đầy đủ thông tin');
+    const { username, email, password } = newUser;
+    if (!username || !email || !password) return alert('Vui lòng nhập đầy đủ thông tin');
     try {
       const res = await API.post('/user', newUser);
       setUsers([...users, res.data]);
-      setNewUser({ name: '', email: '' });
+      setNewUser({ username: '', email: '', password: '' });
     } catch (err) {
+      console.error(err);
       alert('Thêm user thất bại');
     }
   };
@@ -65,14 +71,14 @@ function UserManagement({ user, onLogout }) {
           <table border="1" cellPadding="8" cellSpacing="0" style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead>
               <tr>
-                <th>ID</th><th>Tên</th><th>Email</th><th>Hành động</th>
+                <th>ID</th><th>Tên đăng nhập</th><th>Email</th><th>Hành động</th>
               </tr>
             </thead>
             <tbody>
               {users.map(u => (
                 <tr key={u.id}>
                   <td>{u.id}</td>
-                  <td>{u.name}</td>
+                  <td>{u.username}</td>
                   <td>{u.email}</td>
                   <td><button onClick={() => handleDeleteUser(u.id)}>Xóa</button></td>
                 </tr>
@@ -82,15 +88,22 @@ function UserManagement({ user, onLogout }) {
 
           <h3 style={{ marginTop: 20 }}>Thêm người dùng mới</h3>
           <input
-            placeholder="Tên"
-            value={newUser.name}
-            onChange={e => setNewUser({ ...newUser, name: e.target.value })}
+            placeholder="Tên đăng nhập"
+            value={newUser.username}
+            onChange={e => setNewUser({ ...newUser, username: e.target.value })}
             style={{ marginRight: 10 }}
           />
           <input
             placeholder="Email"
             value={newUser.email}
             onChange={e => setNewUser({ ...newUser, email: e.target.value })}
+            style={{ marginRight: 10 }}
+          />
+          <input
+            type="password"
+            placeholder="Mật khẩu"
+            value={newUser.password}
+            onChange={e => setNewUser({ ...newUser, password: e.target.value })}
             style={{ marginRight: 10 }}
           />
           <button onClick={handleAddUser}>Thêm</button>

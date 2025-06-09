@@ -9,9 +9,16 @@ function App() {
   useEffect(() => {
     const token = localStorage.getItem('token');
     const userData = localStorage.getItem('user');
-    if (token && userData) {
-      setAuthToken(token);
-      setUser(JSON.parse(userData));
+
+    if (token && userData && userData !== 'undefined') {
+      try {
+        const parsedUser = JSON.parse(userData);
+        setAuthToken(token);
+        setUser(parsedUser);
+      } catch (error) {
+        console.error('Error parsing user data from localStorage:', error);
+        localStorage.removeItem('user');
+      }
     }
   }, []);
 
@@ -20,7 +27,14 @@ function App() {
       {!user ? (
         <LoginPage onLogin={setUser} />
       ) : (
-        <UserManagement user={user} onLogout={() => setUser(null)} />
+        <UserManagement
+          user={user}
+          onLogout={() => {
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            setUser(null);
+          }}
+        />
       )}
     </>
   );

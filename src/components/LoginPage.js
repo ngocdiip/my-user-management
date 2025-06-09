@@ -9,17 +9,31 @@ function LoginPage({ onLogin }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+
     try {
-      const response = await API.post('/auth/login', { username, password });
-      const { token, user } = response.data;
+      const response = await API.post('/auth/login', {
+        username,
+        password
+      });
 
-      setAuthToken(token);
-      localStorage.setItem('token', token);
-      localStorage.setItem('user', JSON.stringify(user));
+      const { accessToken } = response.data;
 
-      onLogin(user);
+if (!accessToken) {
+  throw new Error('Token không hợp lệ từ server');
+}
+
+setAuthToken(accessToken);
+localStorage.setItem('token', accessToken);
+
+// Nếu không có user từ backend, lưu thông tin giả lập (hoặc có thể gọi /me sau này)
+const mockUser = { username }; // hoặc để rỗng nếu không cần
+
+localStorage.setItem('user', JSON.stringify(mockUser));
+onLogin(mockUser);
+
     } catch (err) {
-      setError('Đăng nhập thất bại: ' + (err.response?.data?.message || err.message));
+      const msg = err.response?.data?.message || err.message || 'Đăng nhập thất bại';
+      setError(`❌ Đăng nhập thất bại: ${msg}`);
     }
   };
 
